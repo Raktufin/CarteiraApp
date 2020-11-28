@@ -113,7 +113,12 @@ public class MainActivity extends AppCompatActivity {
 
         if(ajuste > 0) {
             //Volta ao ultimo mes caso a data avance o mes atual
-            if (dataApp.after(hoje)) {
+
+            if(dataApp.get(Calendar.YEAR) == hoje.get(Calendar.YEAR)) {
+                if (dataApp.get(Calendar.MONTH) > hoje.get(Calendar.MONTH)) {
+                    dataApp.add(Calendar.MONTH, -1);
+                }
+            } else if(dataApp.get(Calendar.YEAR) > hoje.get(Calendar.YEAR)){
                 dataApp.add(Calendar.MONTH, -1);
             }
         } else {
