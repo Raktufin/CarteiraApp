@@ -10,6 +10,12 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.Date;
+
+import ferramentas.EventosDB;
+import modelo.Evento;
+
 public class VisualizarEventos extends AppCompatActivity {
     private TextView tituloEvento;
     private TextView totalEvento;
@@ -18,6 +24,10 @@ public class VisualizarEventos extends AppCompatActivity {
 
     private Button btNovoEvento;
     private Button btCancelarEvento;
+
+    private ArrayList<Evento> eventos;
+
+    private ItemListaEvento adapter;
 
     //Operacao == 0 indica entrada, == 1 indica saida
     private int op = -1;
@@ -42,6 +52,8 @@ public class VisualizarEventos extends AppCompatActivity {
         //0 == entrada e 1 == saida
 
         ajustaOperacao();
+
+        carregaEventosLista();
     }
 
     private void cadastrarEventos() {
@@ -53,12 +65,19 @@ public class VisualizarEventos extends AppCompatActivity {
 
                     if (op == 0) {
                         trocaAct.putExtra("acao", 0);
+                        startActivityForResult(trocaAct, 0);
                     } else {
                         trocaAct.putExtra("acao", 1);
+                        startActivityForResult(trocaAct, 1);
                     }
-
-                    startActivity(trocaAct);
                 }
+            }
+        });
+
+        this.btCancelarEvento.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
     }
@@ -75,4 +94,31 @@ public class VisualizarEventos extends AppCompatActivity {
     }
 
     //Vamos precisar realizar uma busca no BD sobre os eventos referentes a operacao e apresenta-los na lista
+    private void carregaEventosLista() {
+        //Aqui ocorre a busca dos eventos no BD
+        /*eventos = new ArrayList<>();
+        eventos.add(new Evento("Padaria", null, 10, new Date(), new Date(), new Date()));
+        eventos.add(new Evento("Supermercado", null, 30.5, new Date(), new Date(), new Date()));*/
+
+        EventosDB db = new EventosDB(VisualizarEventos.this);
+        eventos = db.buscarEventos(op, MainActivity.dataApp);
+
+        adapter = new ItemListaEvento(getApplicationContext(), eventos);
+        listaEvento.setAdapter(adapter);
+
+        //Soma de todos os valores para o total
+        double total = 0.0;
+
+        for(int c = 0; c < eventos.size(); c++){
+            total += eventos.get(c).getValor();
+        }
+
+        totalEvento.setText(String.format("%.2f", total));
+    }
+
+    protected void onActivityResult(int codigoRequest, int codigoResultado, Intent data) {
+        super.onActivityResult(codigoRequest, codigoResultado, data);
+
+        carregaEventosLista();
+    }
 }

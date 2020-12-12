@@ -3,7 +3,7 @@ package modelo;
 import java.util.Date;
 
 public class Evento {
-    private long id;
+    private int id;
     private String nome;
     private String caminhoFt;
     private double valor;
@@ -11,7 +11,7 @@ public class Evento {
     private Date valida;
     private Date ocorreu;
 
-    public Evento(long id, String nome, String caminhoFt, double valor, Date cadastro, Date valida, Date ocorreu) {
+    public Evento(int id, String nome, String caminhoFt, double valor, Date cadastro, Date valida, Date ocorreu) {
         this.id = id;
         this.nome = nome;
         this.caminhoFt = caminhoFt;
@@ -30,11 +30,11 @@ public class Evento {
         this.ocorreu = ocorreu;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 

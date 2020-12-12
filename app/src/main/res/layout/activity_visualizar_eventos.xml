@@ -18,7 +18,7 @@
             android:text="Titulo"
             android:textSize="30sp"
             android:layout_gravity="center"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="15dp"
             android:layout_marginBottom="10dp"/>
 
         <ListView
@@ -26,7 +26,9 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_weight="1"
-            android:layout_marginHorizontal="20dp"/>
+            android:layout_marginHorizontal="20dp"
+            android:padding="10dp"
+            android:background="@drawable/borda_lista"/>
 
         <LinearLayout
             android:layout_width="wrap_content"

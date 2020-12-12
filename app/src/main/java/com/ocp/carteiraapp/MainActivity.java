@@ -9,7 +9,11 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+
+import ferramentas.EventosDB;
+import modelo.Evento;
 
 public class MainActivity extends AppCompatActivity {
     private TextView titulo;
@@ -24,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btMesProximo;
 
     private Calendar hoje;
-    private Calendar dataApp;
+    static Calendar dataApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
 
         //Configuracao de eventos
         cadastroEventos();
+
+        attValores();
     }
 
     private void cadastroEventos() {
@@ -60,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mudaMes(-1);
-                mostraDataApp();
             }
         });
 
@@ -69,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mudaMes(+1);
-                mostraDataApp();
             }
         });
 
@@ -81,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
 
                 trocaAct.putExtra("acao", 1);
 
-                startActivity(trocaAct);
+                startActivityForResult(trocaAct, 1);
             }
         });
 
@@ -93,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
                 trocaAct.putExtra("acao", 0);
 
-                startActivity(trocaAct);
+                startActivityForResult(trocaAct, 0);
             }
         });
     }
@@ -124,5 +128,41 @@ public class MainActivity extends AppCompatActivity {
         } else {
             //Aqui vai uma verificacao do BD se existe registros de meses anteriores
         }
+
+        mostraDataApp();
+        attValores();
+    }
+
+    private void attValores() {
+        //Buscando entradas e saidas cadastradas para este mes no BD
+        EventosDB db = new EventosDB(MainActivity.this);
+
+        ArrayList<Evento> saidas = db.buscarEventos(1, dataApp);
+        ArrayList<Evento> entradas = db.buscarEventos(0, dataApp);
+
+        //Somando todos os valores dos eventos recuperados
+        double saidaTotal = 0.0;
+        double entradaTotal = 0.0;
+
+        for (int c = 0; c < saidas.size(); c++){
+            saidaTotal += saidas.get(c).getValor();
+        }
+
+        for (int c = 0; c < entradas.size(); c++){
+            entradaTotal += entradas.get(c).getValor();
+        }
+
+        double saldo = entradaTotal - saidaTotal;
+
+        //Mostrando os valores
+        valorEntrada.setText(String.format("%.2f", entradaTotal));
+        valorSaida.setText(String.format("%.2f", saidaTotal));
+        valorSaldo.setText(String.format("%.2f", saldo));
+    }
+
+    protected void onActivityResult(int codigoRequest, int codigoResultado, Intent data) {
+        super.onActivityResult(codigoRequest, codigoResultado, data);
+
+        attValores();
     }
 }

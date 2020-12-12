@@ -6,17 +6,21 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import ferramentas.EventosDB;
 import modelo.Evento;
@@ -38,6 +42,8 @@ public class CadastroEdicaoEventos extends AppCompatActivity {
     private Button btnFotoCEEvento;
     private Button btnSalvarCEEvento;
     private Button btnCancelarCEEvento;
+
+    private Spinner spinnerCEEvento;
 
     //Operacao 0 == cadastro de entrada; 1 == cadastro de saida; 2 == edicao de entrada; 3 == edicao de saida
     private int op = -1;
@@ -62,11 +68,26 @@ public class CadastroEdicaoEventos extends AppCompatActivity {
         btnSalvarCEEvento = (Button) findViewById(R.id.btnSalvarCEEvento);
         btnCancelarCEEvento = (Button) findViewById(R.id.btnCancelarCEEvento);
 
+        spinnerCEEvento = (Spinner) findViewById(R.id.spinnerCEEvento);
+
         Intent intencao = getIntent();
         op = intencao.getIntExtra("acao", -1);
 
         cadastrarEventos();
         ajustaPorOperacao();
+    }
+
+    private void confSpinner() {
+        List<String> meses = new ArrayList<>();
+
+        for(int c = 1; c <= 24; c++){
+            meses.add(c + "");
+        }
+
+        ArrayAdapter<String> listaAdapter = new ArrayAdapter<>(this, R.layout.support_simple_spinner_dropdown_item, meses);
+
+        this.spinnerCEEvento.setAdapter(listaAdapter);
+        this.spinnerCEEvento.setEnabled(false);
     }
 
     private void cadastrarEventos() {
@@ -95,6 +116,25 @@ public class CadastroEdicaoEventos extends AppCompatActivity {
                 finish();
             }
         });
+
+        //Tratando a repeticao do evento
+        this.checkCEEvento.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(checkCEEvento.isChecked()) {
+                    spinnerCEEvento.setEnabled(true);
+                } else {
+                    spinnerCEEvento.setEnabled(false);
+                }
+            }
+        });
+
+        this.btnCancelarCEEvento.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     private void ajustaPorOperacao(){
@@ -119,11 +159,6 @@ public class CadastroEdicaoEventos extends AppCompatActivity {
             default:
                 this.tituloCEEvento.setText("[ERRO]");
         }
-        if(op == 0) {
-            this.tituloCEEvento.setText("Cadastro de Entrada");
-        } else if(op == 1) {
-            this.tituloCEEvento.setText("Cadastro de Saída");
-        }
     }
 
     private void cadastrarNovoEvento() {
@@ -134,11 +169,11 @@ public class CadastroEdicaoEventos extends AppCompatActivity {
             valor *= -1;
         }
 
-        SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy");
-        String dataStr = this.dataCEEvento.getText().toString();
+        //SimpleDateFormat formatador = new SimpleDateFormat("dd/MM/yyyy");
+        //String dataStr = this.dataCEEvento.getText().toString();
 
-        try {
-            Date diaEvento = formatador.parse(dataStr);
+        //try {
+            Date diaEvento = calendarioTemp.getTime();
 
             //Um novo calendario para calcular a data limite
             Calendar dataLimite = Calendar.getInstance();
@@ -146,7 +181,9 @@ public class CadastroEdicaoEventos extends AppCompatActivity {
 
             //Verificando se o evento ira se repetir
             if (this.checkCEEvento.isChecked()){
-                //Por enquanto so com um mes
+                String mesStr = (String) spinnerCEEvento.getSelectedItem();
+
+                dataLimite.add(Calendar.MONTH, Integer.parseInt(mesStr));
             }
 
             //Setando para o ultimo dia do mes
@@ -157,8 +194,8 @@ public class CadastroEdicaoEventos extends AppCompatActivity {
             //Inserir esse evento no BD
             EventosDB bd = new EventosDB(CadastroEdicaoEventos.this);
             bd.insereEvento(novoEvento);
-        } catch (ParseException ex){
+        /*} catch (ParseException ex){
             System.err.println("erro no formato da data...");
-        }
+        }*/
     }
 }
