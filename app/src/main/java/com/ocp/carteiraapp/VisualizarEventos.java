@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -105,6 +106,27 @@ public class VisualizarEventos extends AppCompatActivity {
 
         adapter = new ItemListaEvento(getApplicationContext(), eventos);
         listaEvento.setAdapter(adapter);
+
+        listaEvento.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int indice, long id) {
+                Evento eventoSelecionado = eventos.get(indice);
+
+                Intent novoFlow = new Intent(VisualizarEventos.this, CadastroEdicaoEventos.class);
+
+                if(op == 0) {
+                    //Editando evento de entrada
+                    novoFlow.putExtra("acao", 2);
+                } else {
+                    //Editando evento de saida
+                    novoFlow.putExtra("acao", 3);
+                }
+
+                novoFlow.putExtra("id", eventoSelecionado.getId() + "");
+
+                startActivityForResult(novoFlow, op);
+            }
+        });
 
         //Soma de todos os valores para o total
         double total = 0.0;

@@ -50,8 +50,68 @@ public class EventosDB extends SQLiteOpenHelper {
         }
     }
 
-    public void atualizaEvento() {
+    public void excluirEvento(Evento eventoAlvo) {
+        try(SQLiteDatabase db = this.getWritableDatabase()) {
+            ContentValues valores = new ContentValues();
+            valores.put("id", eventoAlvo.getId() * -1);
+            valores.put("nome", eventoAlvo.getNome());
+            valores.put("valor", eventoAlvo.getValor());
+            valores.put("imagem", eventoAlvo.getCaminhoFt());
+            valores.put("dataocorreu", eventoAlvo.getOcorreu().getTime());
+            valores.put("datavalida", eventoAlvo.getValida().getTime());
 
+            db.update("evento", valores, "id = ?", new String[]{eventoAlvo.getId() + ""});
+        } catch (SQLiteException ex) {
+            System.err.println("Erro na atualizacao do evento");
+            ex.printStackTrace();
+        }
+    }
+
+    public void updateEvento(Evento eventoAtt) {
+        try(SQLiteDatabase db = this.getWritableDatabase()) {
+            ContentValues valores = new ContentValues();
+            valores.put("nome", eventoAtt.getNome());
+            valores.put("valor", eventoAtt.getValor());
+            valores.put("imagem", eventoAtt.getCaminhoFt());
+            valores.put("dataocorreu", eventoAtt.getOcorreu().getTime());
+            valores.put("datavalida", eventoAtt.getValida().getTime());
+
+            db.update("evento", valores, "id = ?", new String[]{eventoAtt.getId() + ""});
+        } catch (SQLiteException ex) {
+            System.err.println("Erro na atualizacao do evento");
+            ex.printStackTrace();
+        }
+    }
+
+    public Evento buscaEventoId(int idEvento) {
+        String sql = "SELECT * FROM evento WHERE id = " + idEvento;
+
+        Evento resultado = null;
+
+        try(SQLiteDatabase db = this.getWritableDatabase()) {
+            Cursor tupla = db.rawQuery(sql, null);
+
+            if(tupla.moveToFirst()) {
+                String nome = tupla.getString(1);
+                double valor = tupla.getDouble(2);
+                if(valor < 0) {
+                    valor *= -1;
+                }
+                String urlFoto = tupla.getString(3);
+                Date dataOcorreu = new Date(tupla.getLong(4));
+                Date dataCadastro = new Date(tupla.getLong(5));
+                Date dataValida = new Date(tupla.getLong(6));
+
+                resultado = new Evento(idEvento, nome, urlFoto, valor, dataCadastro, dataValida, dataOcorreu);
+
+            }
+
+        } catch (SQLiteException ex) {
+            System.err.println("Erro na consulta SQL da busca de eventos por id");
+            ex.printStackTrace();
+        }
+
+        return resultado;
     }
 
     public ArrayList<Evento> buscarEventos(int op, Calendar data) {
@@ -71,7 +131,7 @@ public class EventosDB extends SQLiteOpenHelper {
         dia2.set(Calendar.MINUTE, 59);
         dia2.set(Calendar.SECOND, 59);
 
-        String sql = "SELECT * FROM evento WHERE ((datavalida <= " + dia2.getTime().getTime() +
+        String sql = "SELECT * FROM evento WHERE id >= 0 AND ((datavalida <= " + dia2.getTime().getTime() +
                 " AND datavalida >= " + dia1.getTime().getTime() + ") OR (dataocorreu <= " + dia2.getTime().getTime() +
                 " AND datavalida >= " + dia1.getTime().getTime() + "))";
         sql += " AND valor ";
